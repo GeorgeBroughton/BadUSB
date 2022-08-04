@@ -4,6 +4,7 @@ param(
     [int]$Delay = 1000,
     [switch]$UseAltString,
     [switch]$Open,
+    [switch]$NoDelay,
     [switch]$Cleanup
 )
 
@@ -22,16 +23,28 @@ $sb = [System.Text.StringBuilder]::new()
         # If you have this problem. Remember, BACK + LEFT to reset the flipper.
         # Also, please note that delay is used here because while the typing buffer for notepad is more efficient, it's also laggy as balls.
 
-        if ($UseAltString) {
-            [convert]::ToBase64String((Get-Content -Path $Path.FullName -AsByteStream)) -split "(\S{$StringLength})" | ForEach-Object { if ($_) {
-                [void]$sb.AppendLine("ALTSTRING $_")
-                [void]$sb.AppendLine("DELAY $Delay")
-            }}
+        if ($NoDelay) {
+            if ($UseAltString) {
+                [convert]::ToBase64String((Get-Content -Path $Path.FullName -AsByteStream)) -split "(\S{$StringLength})" | ForEach-Object { if ($_) {
+                    [void]$sb.AppendLine("ALTSTRING $_")
+                }}
+            } else {
+                [convert]::ToBase64String((Get-Content -Path $Path.FullName -AsByteStream )) -split "(\S{$StringLength})" | ForEach-Object { if ($_) {
+                    [void]$sb.AppendLine("STRING $_")
+                }}
+            }
         } else {
-            [convert]::ToBase64String((Get-Content -Path $Path.FullName -AsByteStream )) -split "(\S{$StringLength})" | ForEach-Object { if ($_) {
-                [void]$sb.AppendLine("STRING $_")
-                [void]$sb.AppendLine("DELAY $Delay")
-            }}
+            if ($UseAltString) {
+                [convert]::ToBase64String((Get-Content -Path $Path.FullName -AsByteStream)) -split "(\S{$StringLength})" | ForEach-Object { if ($_) {
+                    [void]$sb.AppendLine("ALTSTRING $_")
+                    [void]$sb.AppendLine("DELAY $Delay")
+                }}
+            } else {
+                [convert]::ToBase64String((Get-Content -Path $Path.FullName -AsByteStream )) -split "(\S{$StringLength})" | ForEach-Object { if ($_) {
+                    [void]$sb.AppendLine("STRING $_")
+                    [void]$sb.AppendLine("DELAY $Delay")
+                }}
+            }
         }
 
     # Now we save the file somewhere. %HOMEPATH% is probably good enough.
